@@ -1,0 +1,7 @@
+package {{.PackageName}}
+
+type {{.ModelName}} struct {
+    {{range $index, $item := .Fields}}// {{$item.Comment}}
+    {{$item.Name}} {{$item.Type}}   {{$item.Tag}}
+    {{end}}
+}

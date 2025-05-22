@@ -1,0 +1,30 @@
+model:
+  packageName: "model"
+  modelName: "userModel"
+  fields:
+    - name: "UserName"
+      type: "string"
+      tag: "`json:\"user_name\"`"
+      comment: "用户名"
+    - name: "Mobile"
+      type: "string"
+      tag: "`json:\"mobile\"`"
+      comment: "手机号"
+
+excel:
+  packageName: "excel"
+  sheetName: "sheet1"
+  name: "userExport"
+  model:
+    packageName: "model"
+    name: "UserModel"
+    headers:
+      - 
+        - "用户名" 
+        - "手机号"
+    mergeHeaders:
+      - "A1:B1"
+    fields:
+        - "UserName" 
+        - "Mobile"
+         

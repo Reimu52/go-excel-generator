@@ -1,0 +1,104 @@
+package {{.PackageName}}
+
+import (
+	"github.com/xuri/excelize/v2"
+)
+
+func ExportExcel() *excelize.File{
+	page, pageSize := 1, 10
+	users, pages, err := getData(page, pageSize)
+	if err != nil {
+		panic(err)
+	}
+	f := excelize.NewFile()
+	sheetName := "{{.SheetName}}"
+	streamWriter, _ := f.NewStreamWriter(sheetName)
+	start, err1 := createExcelHead(streamWriter, f)
+	if err1 != nil {
+		panic(err1)
+	}
+	for {
+		if page > pages {
+			break
+		}
+		writeData(streamWriter, f, start, page, pageSize, users)
+		users, pages, err = getData(page, pageSize)
+		page++
+	}
+	streamWriter.Flush()
+	return f
+}
+
+func createExcelHead(stram *excelize.StreamWriter, f *excelize.File) (int, error) {
+	headStyle, err := f.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},   // 左边框
+			{Type: "right", Color: "000000", Style: 1},  // 右边框
+			{Type: "top", Color: "000000", Style: 1},    // 上边框
+			{Type: "bottom", Color: "000000", Style: 1}, // 下边框
+		},
+		Fill: excelize.Fill{
+			Type:    "pattern",
+			Color:   []string{"#D9EAD3"},
+			Pattern: 1,
+		},
+	})
+    if err != nil {
+        return 0, err
+    }
+	headers := [][]any{
+   	{{range $index, $item := .Model.Headers}}	{
+		{{range $index1, $item1 := $item}}	excelize.Cell{Value: "{{$item1}}", StyleID: headStyle}, 
+		{{end}}},
+	{{end}}}
+	mergeHeaders := []string{ 
+	{{range $index, $item := .Model.MergeHeaders}}	"{{$item}}",
+	{{end}}}
+	for i := range mergeHeaders {
+		indexStr := strings.Split(mergeHeaders[i], ":")
+		stram.MergeCell(indexStr[0], indexStr[1])
+	}
+	stram.SetColWidth(1, len(headers), 28)
+	for i := range headers{
+		cell, err := excelize.CoordinatesToCellName(1, i+1)
+		if err != nil {
+			return 0, err
+		}
+		stram.SetRow(cell, headers[i], excelize.RowOpts{Height: 40})
+	}
+	return len(headers), nil
+}
+
+func writeData(stram *excelize.StreamWriter, f *excelize.File, start, page, pageSize int, list []{{.Model.PackageName}}.{{.Model.Name}}) error {
+	rowStyle, err := f.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},   // 左边框
+			{Type: "right", Color: "000000", Style: 1},  // 右边框
+			{Type: "top", Color: "000000", Style: 1},    // 上边框
+			{Type: "bottom", Color: "000000", Style: 1}, // 下边框
+		},
+	})
+
+    if err != nil {
+        return err
+    }
+
+	for index, item := range list {
+		cell, _ := excelize.CoordinatesToCellName(1, start+1+(page-1)*pageSize+index)
+		row := []any{
+        {{range $index, $item := .Model.Fields}}	excelize.Cell{Value: item.{{$item}}, StyleID: rowStyle},
+        {{end}}}
+		stram.SetColWidth(page, len(row), 28)
+		stram.SetRow(cell, row, excelize.RowOpts{Height: 30})
+
+	}
+    return nil
+}
