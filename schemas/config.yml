@@ -1,7 +1,7 @@
 model:
   packageName: "model"
   modelName: "userModel"
-  fields:
+  fields: # 需要生成的model的字段
     - name: "UserName"
       type: "string"
       tag: "`json:\"user_name\"`"
@@ -18,13 +18,13 @@ excel:
   model:
     packageName: "model"
     name: "UserModel"
-    headers:
+    headers: # 表头 
       - 
         - "用户名" 
         - "手机号"
-    mergeHeaders:
+    mergeHeaders: # 合并单元格
       - "A1:B1"
-    fields:
+    fields: # 需要导出的字段
         - "UserName" 
         - "Mobile"
          
